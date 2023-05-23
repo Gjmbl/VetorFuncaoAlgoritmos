@@ -201,6 +201,39 @@ void editarUsuario(){
 
 void removerUsuario(){
     printf(">>> Excluindo Usuário <<<\n");
+    int usuarioExcluir, posicao, quantidade;
+
+    printf("Digite o id do usuário que deseja editar: ");
+    scanf("%i",&usuarioExcluir);
+    
+    posicao = posicaoUsuario(usuarioExcluir);
+    while(posicao == -1){
+        printf("Id não existe. Digite um id válido: ");
+        scanf("%i",&usuarioExcluir);
+        posicao = posicaoUsuario(usuarioExcluir);
+    }
+
+    quantidade = quantidadeUsuarios();
+
+    for (int i = posicao; i < quantidade - 1; i++) {
+        id[i] = id[i + 1];
+        strncpy(nome[i], nome[i + 1], 100);
+        strncpy(email[i], email[i + 1], 100);
+        strncpy(genero[i], genero[i + 1], 100);
+        strncpy(endereco[i], endereco[i + 1], 100);
+        altura[i] = altura[i + 1];
+        vacinado[i] = vacinado[i + 1];
+    }
+
+    id[quantidade - 1] = -1;
+    strcpy(nome[quantidade - 1], "");
+    strcpy(email[quantidade - 1], "");
+    strcpy(genero[quantidade - 1], "");
+    strcpy(endereco[quantidade - 1], "");
+    altura[quantidade - 1] = -1;
+    vacinado[quantidade - 1] = -1;
+
+    printf(">>> Usuário excluído com sucesso <<<\n");
 }
 
 void buscarUsuario(){
