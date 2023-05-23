@@ -142,6 +142,16 @@ void buscarUsuario(){
 
 void imprimirUsuarios(){
     printf(">>> Imprimindo Todos os Usuários <<<\n");
+    for(int i=0; i<quantidadeUsuarios();i++){
+        printf("Id: %d\n",id[i]);
+        printf("Nome: %d\n",nome[i]);
+        printf("E-mail: %d\n",email[i]);
+        printf("Gênero: %d\n",genero[i]);
+        printf("Endereço: %d\n",endereco[i]);
+        printf("Altura: %d\n",altura[i]);
+        printf("Vacinou: %d\n",vacinado[i]);
+        printf("\n");
+    }
 }
 
 void fazerBackup(){
