@@ -27,8 +27,8 @@ void main(){
         printf("Escolha uma das opções abaixo:\n");
         printf("(0) Finalizar Programa\n");
         printf("(1) Adicionar Usuário\n");
-        printf("(2) Excluir Usuário\n");
-        printf("(3) Editar Usuário\n");
+        printf("(2) Editar Usuário\n");
+        printf("(3) Excluir Usuário\n");
         printf("(4) Buscar Usuário por e-mail\n");
         printf("(5) Imprimir Todos os Usuários Cadastrados\n");
         printf("(6) Criar Backup dos Usuários\n");
@@ -130,6 +130,73 @@ void adicionarUsuario(){
 
 void editarUsuario(){
     printf(">>> Editando Usuário <<<\n");
+    int usuarioEditar, posicao,vacinacao;
+    float altra;
+    
+    printf("Digite o id do usuário que deseja editar: ");
+    scanf("%i",&usuarioEditar);
+    posicao = posicaoUsuario(usuarioEditar);
+    while(posicao == -1){
+        printf("Id não existe. Digite um id válido: ");
+        scanf("%i",&usuarioEditar);
+        posicao = posicaoUsuario(usuarioEditar);
+    }
+    printf("Usuário encontrado! \n");
+    printf("Id: %d\n",id[posicao]);
+    printf("Nome: %s\n",nome[posicao]);
+    printf("E-mail: %s\n",email[posicao]);
+    printf("Gênero: %s\n",genero[posicao]);
+    printf("Endereço: %s\n",endereco[posicao]);
+    printf("Altura: %.2f\n",altura[posicao]);
+    printf("Vacinou: %d\n",vacinado[posicao]);
+    printf("\n");
+
+    getchar();
+    printf("Digite o nome do usuario %d: ",posicao);
+    fgets(nome[posicao], 100, stdin);
+    nome[posicao][strcspn(nome[posicao], "\n")] = '\0';
+
+    printf("Digite o email do usuario %d: ",posicao);
+    fgets(email[posicao], 100, stdin);
+    email[posicao][strcspn(email[posicao], "\n")] = '\0';
+    while(strchr(email[posicao],'@') == NULL){
+        printf("E-mail não é válido, digite um e-mail válido: ");
+        fgets(email[posicao], 100, stdin);
+        email[posicao][strcspn(email[posicao], "\n")] = '\0';
+    }
+
+    printf("Digite o gênero do usuario %d: ",posicao);
+    fgets(genero[posicao], 100, stdin);
+    genero[posicao][strcspn(genero[posicao], "\n")] = '\0';
+    while(strcmp(genero[posicao],"feminino")!=0 && strcmp(genero[posicao],"masculino")!=0 && strcmp(genero[posicao],"indiferente")!=0){
+        printf("Você digitou errado! Digite (feminino, masculino ou indiferente): ",posicao);
+        fgets(genero[posicao], 100, stdin);
+        genero[posicao][strcspn(genero[posicao], "\n")] = '\0';
+    }
+
+    printf("Digite o endereço do usuario %d: ",posicao);
+    fgets(endereco[posicao], 100, stdin);
+    endereco[posicao][strcspn(endereco[posicao], "\n")] = '\0';
+        
+    printf("Digite a altura do usuario %d: ",posicao);
+    scanf("%f",&altra);
+    while (altra < 1 || altra > 2){
+        printf("Digite um valor entre 1 e 2 metros: ");
+        scanf("%f",&altra);
+    };
+    
+    altura[posicao] = altra;
+
+    printf("Digite (0) se o usuário não for vacinado ou (1) se o usuário for vacinado: ");
+    scanf("%i",&vacinacao);
+    while(vacinacao!=0 && vacinacao!=1){
+        printf("Você digitou errado. Digite (0) se o usuário não for vacinado ou (1) se o usuário for vacinado: ");
+        scanf("%i",&vacinacao);
+    }
+    vacinado[posicao] = vacinacao;
+
+    getchar();
+
 }
 
 void removerUsuario(){
@@ -144,11 +211,11 @@ void imprimirUsuarios(){
     printf(">>> Imprimindo Todos os Usuários <<<\n");
     for(int i=0; i<quantidadeUsuarios();i++){
         printf("Id: %d\n",id[i]);
-        printf("Nome: %d\n",nome[i]);
-        printf("E-mail: %d\n",email[i]);
-        printf("Gênero: %d\n",genero[i]);
-        printf("Endereço: %d\n",endereco[i]);
-        printf("Altura: %d\n",altura[i]);
+        printf("Nome: %s\n",nome[i]);
+        printf("E-mail: %s\n",email[i]);
+        printf("Gênero: %s\n",genero[i]);
+        printf("Endereço: %s\n",endereco[i]);
+        printf("Altura: %.2f\n",altura[i]);
         printf("Vacinou: %d\n",vacinado[i]);
         printf("\n");
     }
@@ -177,4 +244,14 @@ int quantidadeUsuarios(){
             return contador;
         }
     }
+}
+
+int posicaoUsuario(int idUsuario){
+    int quantidade = quantidadeUsuarios();
+    for(int i = 0; i<quantidade; i++){
+        if(id[i] == idUsuario){
+            return i;
+        }
+    }
+    return -1;
 }
