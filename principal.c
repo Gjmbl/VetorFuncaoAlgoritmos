@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <string.h>
 
 #define USERS_MAX 1000
 
@@ -12,6 +13,14 @@ char genero[USERS_MAX][32];
 char endereco[USERS_MAX][256];
 double altura[USERS_MAX];
 int vacinado[USERS_MAX];
+
+int idBackup[USERS_MAX];
+char nomeBackup[USERS_MAX][256];
+char emailBackup[USERS_MAX][256];
+char generoBackup[USERS_MAX][32];
+char enderecoBackup[USERS_MAX][256];
+double alturaBackup[USERS_MAX];
+int vacinadoBackup[USERS_MAX];
 
 void main(){
     // Habilitar acentuação
@@ -203,7 +212,7 @@ void removerUsuario(){
     printf(">>> Excluindo Usuário <<<\n");
     int usuarioExcluir, posicao, quantidade;
 
-    printf("Digite o id do usuário que deseja editar: ");
+    printf("Digite o id do usuário que deseja excluir: ");
     scanf("%i",&usuarioExcluir);
     
     posicao = posicaoUsuario(usuarioExcluir);
@@ -238,6 +247,46 @@ void removerUsuario(){
 
 void buscarUsuario(){
     printf(">>> Buscando Usuário <<<\n");
+    int quantidade, posicao;
+    char *usuarioBuscar;
+    int k=0;
+
+    quantidade = quantidadeUsuarios();
+    
+    getchar();
+    printf("Digite o e-mail do usuário que deseja encontrar as informações: ");
+    fgets(usuarioBuscar, 100, stdin);
+
+    while(strchr(usuarioBuscar,'@') == NULL){
+        printf("Digitação inválida! Digite um e-mail válido: ");
+        fgets(usuarioBuscar, 100, stdin);
+        usuarioBuscar[strcspn(usuarioBuscar, "\n")] = '\0';
+    }
+
+    usuarioBuscar[strcspn(usuarioBuscar, "\n")] = '\0';
+
+    while(k<quantidade){
+        if(strcmp(usuarioBuscar, email[k]) == 0){
+            posicao = k;
+            quantidade = k;
+        } else{
+            posicao = -1;
+        }
+    }
+
+    if (posicao>=0){
+        printf("Usuário encontrado! \n");
+        printf("Id: %d\n",id[posicao]);
+        printf("Nome: %s\n",nome[posicao]);
+        printf("E-mail: %s\n",email[posicao]);
+        printf("Gênero: %s\n",genero[posicao]);
+        printf("Endereço: %s\n",endereco[posicao]);
+        printf("Altura: %.2f\n",altura[posicao]);
+        printf("Vacinou: %d\n",vacinado[posicao]);
+        printf("\n");
+    } else{
+        printf("Usuário não encontrado! \n");
+    }    
 }
 
 void imprimirUsuarios(){
@@ -256,6 +305,19 @@ void imprimirUsuarios(){
 
 void fazerBackup(){
     printf(">>> Criando Backup <<<\n");
+    int quantidade = quantidadeUsuarios();
+    
+    for (int i = 0; i < quantidade; i++) {
+        idBackup[i] = id[i];
+        strcpy(nomeBackup[i], nome[i]);
+        strcpy(emailBackup[i], email[i]);
+        strcpy(generoBackup[i], genero[i]);
+        strcpy(enderecoBackup[i], endereco[i]);
+        alturaBackup[i] = altura[i];
+        vacinadoBackup[i] = vacinado[i];
+    }
+
+    printf("Backup feito com sucesso!\n");
 }
 
 void restaurarBackup(){
