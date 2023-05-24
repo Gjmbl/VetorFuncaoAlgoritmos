@@ -322,6 +322,19 @@ void fazerBackup(){
 
 void restaurarBackup(){
     printf(">>> Restaurando Backup <<<\n");
+    int quantidade = quantidadeUsuariosBackup();
+
+    for (int i = 0; i < quantidade; i++) {
+        id[i] = idBackup[i];
+        strcpy(nome[i], nomeBackup[i]);
+        strcpy(email[i], emailBackup[i]);
+        strcpy(genero[i], generoBackup[i]);
+        strcpy(endereco[i], enderecoBackup[i]);
+        altura[i] = alturaBackup[i];
+        vacinado[i] = vacinadoBackup[i];
+    }
+
+    printf("Restauração concluída com sucesso!\n");
 }
 
 // Funções Utilitárias
@@ -331,6 +344,17 @@ int gerarID(){
 }
 
 int quantidadeUsuarios(){
+    int contador = 0;
+    for(int j=0;j<1000;j++){
+        if(id[j]>=1){
+            contador++;
+        } else{
+            return contador;
+        }
+    }
+}
+
+int quantidadeUsuariosBackup(){
     int contador = 0;
     for(int j=0;j<1000;j++){
         if(id[j]>=1){
