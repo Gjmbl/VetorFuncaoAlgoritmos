@@ -248,7 +248,7 @@ void removerUsuario(){
 void buscarUsuario(){
     printf(">>> Buscando Usuário <<<\n");
     int quantidade, posicao;
-    char *usuarioBuscar;
+    char usuarioBuscar[100];
     int k=0;
 
     quantidade = quantidadeUsuarios();
@@ -272,6 +272,7 @@ void buscarUsuario(){
         } else{
             posicao = -1;
         }
+        k++;
     }
 
     if (posicao>=0){
