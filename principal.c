@@ -1,377 +1,219 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <locale.h>
 #include <string.h>
+#include <time.h>
 
-#define USERS_MAX 1000
+typedef struct {
+    char *nome;
+    char *email;
+    char sexo;
+    char *endereco;
+    float altura;
+    int tomouVacina;
+    int id;
+} Usuario;
 
-// Declarando vetores globais principais de atributos
-int id[USERS_MAX];
-char nome[USERS_MAX][256];
-char email[USERS_MAX][256];
-char genero[USERS_MAX][32];
-char endereco[USERS_MAX][256];
-double altura[USERS_MAX];
-int vacinado[USERS_MAX];
+typedef struct No {
+    Usuario usuario;
+    struct No *proximo;
+} No;
 
-int idBackup[USERS_MAX];
-char nomeBackup[USERS_MAX][256];
-char emailBackup[USERS_MAX][256];
-char generoBackup[USERS_MAX][32];
-char enderecoBackup[USERS_MAX][256];
-double alturaBackup[USERS_MAX];
-int vacinadoBackup[USERS_MAX];
+No* criarNo(Usuario usuario) {
+    No *novoNo = (No*)malloc(sizeof(No));
+    novoNo->usuario = usuario;
+    novoNo->proximo = NULL;
+    return novoNo;
+}
 
-void main(){
-    // Habilitar acentuação
-    setlocale(LC_ALL,"");
+int gerarID() {
+    srand(time(NULL));
+    return rand();
+}
 
-    printf("----~ Tarefa Vetores e Funções ~----\n");
+void inserirUsuario(No **lista, Usuario usuario) {
+    No *novoNo = criarNo(usuario);
+    
+    if (*lista == NULL) {
+        *lista = novoNo;
+    } else {
+        No *atual = *lista;
+        while (atual->proximo != NULL) {
+            atual = atual->proximo;
+        }
+        atual->proximo = novoNo;
+    }
+}
 
-    // Main loop
-    char escolha;
-    int ml_flag = 1, invalid_flag;
+Usuario* buscarUsuario(No *lista, const char *email) {
+    No *atual = lista;
+    while (atual != NULL) {
+        if (strcmp(atual->usuario.email, email) == 0) {
+            return &(atual->usuario);
+        }
+        atual = atual->proximo;
+    }
+    return NULL;
+}
 
-    while(ml_flag == 1){
-        printf("Escolha uma das opções abaixo:\n");
-        printf("(0) Finalizar Programa\n");
-        printf("(1) Adicionar Usuário\n");
-        printf("(2) Editar Usuário\n");
-        printf("(3) Excluir Usuário\n");
-        printf("(4) Buscar Usuário por e-mail\n");
-        printf("(5) Imprimir Todos os Usuários Cadastrados\n");
-        printf("(6) Criar Backup dos Usuários\n");
-        printf("(7) Restaurar Backup\n> ");
-        do{
-            invalid_flag = 0;
-            scanf(" %c", &escolha);
-            switch(escolha){
-            case '0':
-                printf("Encerrando programa!");
-                ml_flag = 0;
-                break;
-            case '1':
-                adicionarUsuario();
-                break;
-            case '2':
-                editarUsuario();
-                break;
-            case '3':
-                removerUsuario();
-                break;
-            case '4':
-                buscarUsuario();
-                break;
-            case '5':
-                imprimirUsuarios();
-                break;
-            case '6':
-                fazerBackup();
-                break;
-            case '7':
-                restaurarBackup();
-                break;
-            default:
-                invalid_flag = 1;
-                printf("Escolha Inválida\n> ");
+void excluirUsuario(No **lista, const char *email) {
+    No *anterior = NULL;
+    No *atual = *lista;
+    
+    while (atual != NULL) {
+        if (strcmp(atual->usuario.email, email) == 0) {
+            if (anterior == NULL) {
+                *lista = atual->proximo;
+            } else {
+                anterior->proximo = atual->proximo;
+            }
+            free(atual->usuario.nome);
+            free(atual->usuario.email);
+            free(atual->usuario.endereco);
+            free(atual);
+            printf("Usuario excluido com sucesso.\n");
+            return;
+        }
+        
+        anterior = atual;
+        atual = atual->proximo;
+    }
+    
+    printf("Usuario nao encontrado.\n");
+}
+
+void imprimirUsuarios(No *lista) {
+    No *atual = lista;
+    
+    while (atual != NULL) {
+        printf("\nInformacoes do usuario:\n");
+        printf("ID: %d\n", atual->usuario.id);
+        printf("Nome: %s\n", atual->usuario.nome);
+        printf("Email: %s\n", atual->usuario.email);
+        printf("Sexo: %c\n", atual->usuario.sexo);
+        printf("Endereco: %s\n", atual->usuario.endereco);
+        printf("Altura: %.2f\n", atual->usuario.altura);
+        
+        if (atual->usuario.tomouVacina == 1) {
+            printf("Tomou vacina: Sim\n");
+        } else if (atual->usuario.tomouVacina == 2) {
+            printf("Tomou vacina: Nao\n");
+        } else {
+            printf("Tomou vacina: Nao informado\n");
+        }
+        
+        atual = atual->proximo;
+    }
+}
+
+void liberarLista(No **lista) {
+    No *atual = *lista;
+    while (atual != NULL) {
+        No *proximo = atual->proximo;
+        free(atual->usuario.nome);
+        free(atual->usuario.email);
+        free(atual->usuario.endereco);
+        free(atual);
+        atual = proximo;
+    }
+    *lista = NULL;
+}
+
+int main() {
+    No *lista = NULL;
+    int opcao;
+    
+    do {
+        printf("\nMenu:\n");
+        printf("1. Inserir usuario\n");
+        printf("2. Buscar usuario por email\n");
+        printf("3. Excluir usuario por email\n");
+        printf("4. Imprimir todos os usuarios\n");
+        printf("5. Sair\n");
+        printf("Opcao: ");
+        scanf("%d", &opcao);
+        
+        switch (opcao) {
+            case 1: {
+                Usuario novoUsuario;
+                printf("Nome: ");
+                char nomeTemp[50];
+                scanf(" %[^\n]s", nomeTemp);
+                novoUsuario.nome = (char*)malloc((strlen(nomeTemp) + 1) * sizeof(char));
+                strcpy(novoUsuario.nome, nomeTemp);
+                
+                printf("Email: ");
+                char emailTemp[50];
+                scanf(" %[^\n]s", emailTemp);
+                novoUsuario.email = (char*)malloc((strlen(emailTemp) + 1) * sizeof(char));
+                strcpy(novoUsuario.email, emailTemp);
+                
+                printf("Sexo (M/F): ");
+                scanf(" %c", &novoUsuario.sexo);
+                
+                printf("Endereco: ");
+                char enderecoTemp[100];
+                scanf(" %[^\n]s", enderecoTemp);
+                novoUsuario.endereco = (char*)malloc((strlen(enderecoTemp) + 1) * sizeof(char));
+                strcpy(novoUsuario.endereco, enderecoTemp);
+                
+                printf("Altura: ");
+                scanf("%f", &novoUsuario.altura);
+                
+                printf("Tomou vacina? (1 - Sim / 2 - Nao): ");
+                scanf("%d", &novoUsuario.tomouVacina);
+                
+                novoUsuario.id = gerarID();
+                
+                inserirUsuario(&lista, novoUsuario);
+                printf("Usuario inserido com sucesso.\n");
                 break;
             }
-        }while(invalid_flag == 1);
-    }
-}
-
-// Funções Principais
-void adicionarUsuario(){
-    printf(">>> Adicionando Usuário <<<\n");
-    float altra;
-    int vacinacao;
-    getchar();
-    for(int i=0; i<3; i++){
-        printf("\n");
-        id[i] = gerarID();
-        printf("O ID do usuario %d é: %d\n", i, id[i]);
-        
-        printf("Digite o nome do usuario %d: ",i);
-        fgets(nome[i], 100, stdin);
-        nome[i][strcspn(nome[i], "\n")] = '\0';
-
-        printf("Digite o email do usuario %d: ",i);
-        fgets(email[i], 100, stdin);
-        email[i][strcspn(email[i], "\n")] = '\0';
-        while(strchr(email[i],'@') == NULL){
-            printf("E-mail não é válido, digite um e-mail válido: ");
-            fgets(email[i], 100, stdin);
-            email[i][strcspn(email[i], "\n")] = '\0';
+            case 2: {
+                char emailBusca[50];
+                printf("Email para busca: ");
+                scanf(" %[^\n]s", emailBusca);
+                Usuario *usuarioEncontrado = buscarUsuario(lista, emailBusca);
+                if (usuarioEncontrado != NULL) {
+                    printf("\nInformacoes do usuario:\n");
+                    printf("ID: %d\n", usuarioEncontrado->id);
+                    printf("Nome: %s\n", usuarioEncontrado->nome);
+                    printf("Email: %s\n", usuarioEncontrado->email);
+                    printf("Sexo: %c\n", usuarioEncontrado->sexo);
+                    printf("Endereco: %s\n", usuarioEncontrado->endereco);
+                    printf("Altura: %.2f\n", usuarioEncontrado->altura);
+                    if (usuarioEncontrado->tomouVacina == 1) {
+                        printf("Tomou vacina: Sim\n");
+                    } else if (usuarioEncontrado->tomouVacina == 2) {
+                        printf("Tomou vacina: Nao\n");
+                    } else {
+                        printf("Tomou vacina: Nao informado\n");
+                    }
+                } else {
+                    printf("Usuario nao encontrado.\n");
+                }
+                break;
+            }
+            case 3: {
+                char emailExclusao[50];
+                printf("Email para exclusao: ");
+                scanf(" %[^\n]s", emailExclusao);
+                excluirUsuario(&lista, emailExclusao);
+                break;
+            }
+            case 4: {
+                printf("\nTodos os usuarios:\n");
+                imprimirUsuarios(lista);
+                break;
+            }
+            case 5:
+                printf("Encerrando o programa.\n");
+                liberarLista(&lista);
+                break;
+            default:
+                printf("Opcao invalida. Tente novamente.\n");
+                break;
         }
-
-        printf("Digite o gênero do usuario %d: ",i);
-        fgets(genero[i], 100, stdin);
-        genero[i][strcspn(genero[i], "\n")] = '\0';
-        while(strcmp(genero[i],"feminino")!=0 && strcmp(genero[i],"masculino")!=0 && strcmp(genero[i],"indiferente")!=0){
-            printf("Você digitou errado! Digite (feminino, masculino ou indiferente): ",i);
-            fgets(genero[i], 100, stdin);
-            genero[i][strcspn(genero[i], "\n")] = '\0';
-        }
-
-        printf("Digite o endereço do usuario %d: ",i);
-        fgets(endereco[i], 100, stdin);
-        endereco[i][strcspn(endereco[i], "\n")] = '\0';
-        
-        printf("Digite a altura do usuario %d: ",i);
-        scanf("%f",&altra);
-        while (altra < 1 || altra > 2){
-            printf("Digite um valor entre 1 e 2 metros: ");
-            scanf("%f",&altra);
-        };
-        altura[i] = altra;
-
-        printf("Digite (0) se o usuário não for vacinado ou (1) se o usuário for vacinado: ");
-        scanf("%i",&vacinacao);
-        while(vacinacao!=0 && vacinacao!=1){
-            printf("Você digitou errado. Digite (0) se o usuário não for vacinado ou (1) se o usuário for vacinado: ");
-            scanf("%i",&vacinacao);
-        }
-        vacinado[i] = vacinacao;
-
-        getchar();
-    }
-}
-
-void editarUsuario(){
-    printf(">>> Editando Usuário <<<\n");
-    int usuarioEditar, posicao,vacinacao;
-    float altra;
+    } while (opcao != 5);
     
-    printf("Digite o id do usuário que deseja editar: ");
-    scanf("%i",&usuarioEditar);
-    posicao = posicaoUsuario(usuarioEditar);
-    while(posicao == -1){
-        printf("Id não existe. Digite um id válido: ");
-        scanf("%i",&usuarioEditar);
-        posicao = posicaoUsuario(usuarioEditar);
-    }
-    printf("Usuário encontrado! \n");
-    printf("Id: %d\n",id[posicao]);
-    printf("Nome: %s\n",nome[posicao]);
-    printf("E-mail: %s\n",email[posicao]);
-    printf("Gênero: %s\n",genero[posicao]);
-    printf("Endereço: %s\n",endereco[posicao]);
-    printf("Altura: %.2f\n",altura[posicao]);
-    printf("Vacinou: %d\n",vacinado[posicao]);
-    printf("\n");
-
-    getchar();
-    printf("Digite o nome do usuario %d: ",posicao);
-    fgets(nome[posicao], 100, stdin);
-    nome[posicao][strcspn(nome[posicao], "\n")] = '\0';
-
-    printf("Digite o email do usuario %d: ",posicao);
-    fgets(email[posicao], 100, stdin);
-    email[posicao][strcspn(email[posicao], "\n")] = '\0';
-    while(strchr(email[posicao],'@') == NULL){
-        printf("E-mail não é válido, digite um e-mail válido: ");
-        fgets(email[posicao], 100, stdin);
-        email[posicao][strcspn(email[posicao], "\n")] = '\0';
-    }
-
-    printf("Digite o gênero do usuario %d: ",posicao);
-    fgets(genero[posicao], 100, stdin);
-    genero[posicao][strcspn(genero[posicao], "\n")] = '\0';
-    while(strcmp(genero[posicao],"feminino")!=0 && strcmp(genero[posicao],"masculino")!=0 && strcmp(genero[posicao],"indiferente")!=0){
-        printf("Você digitou errado! Digite (feminino, masculino ou indiferente): ",posicao);
-        fgets(genero[posicao], 100, stdin);
-        genero[posicao][strcspn(genero[posicao], "\n")] = '\0';
-    }
-
-    printf("Digite o endereço do usuario %d: ",posicao);
-    fgets(endereco[posicao], 100, stdin);
-    endereco[posicao][strcspn(endereco[posicao], "\n")] = '\0';
-        
-    printf("Digite a altura do usuario %d: ",posicao);
-    scanf("%f",&altra);
-    while (altra < 1 || altra > 2){
-        printf("Digite um valor entre 1 e 2 metros: ");
-        scanf("%f",&altra);
-    };
-    
-    altura[posicao] = altra;
-
-    printf("Digite (0) se o usuário não for vacinado ou (1) se o usuário for vacinado: ");
-    scanf("%i",&vacinacao);
-    while(vacinacao!=0 && vacinacao!=1){
-        printf("Você digitou errado. Digite (0) se o usuário não for vacinado ou (1) se o usuário for vacinado: ");
-        scanf("%i",&vacinacao);
-    }
-    vacinado[posicao] = vacinacao;
-
-    getchar();
-
-}
-
-void removerUsuario(){
-    printf(">>> Excluindo Usuário <<<\n");
-    int usuarioExcluir, posicao, quantidade;
-
-    printf("Digite o id do usuário que deseja excluir: ");
-    scanf("%i",&usuarioExcluir);
-    
-    posicao = posicaoUsuario(usuarioExcluir);
-    while(posicao == -1){
-        printf("Id não existe. Digite um id válido: ");
-        scanf("%i",&usuarioExcluir);
-        posicao = posicaoUsuario(usuarioExcluir);
-    }
-
-    quantidade = quantidadeUsuarios();
-
-    for (int i = posicao; i < quantidade - 1; i++) {
-        id[i] = id[i + 1];
-        strncpy(nome[i], nome[i + 1], 100);
-        strncpy(email[i], email[i + 1], 100);
-        strncpy(genero[i], genero[i + 1], 100);
-        strncpy(endereco[i], endereco[i + 1], 100);
-        altura[i] = altura[i + 1];
-        vacinado[i] = vacinado[i + 1];
-    }
-
-    id[quantidade - 1] = -1;
-    strcpy(nome[quantidade - 1], "");
-    strcpy(email[quantidade - 1], "");
-    strcpy(genero[quantidade - 1], "");
-    strcpy(endereco[quantidade - 1], "");
-    altura[quantidade - 1] = -1;
-    vacinado[quantidade - 1] = -1;
-
-    printf(">>> Usuário excluído com sucesso <<<\n");
-}
-
-void buscarUsuario(){
-    printf(">>> Buscando Usuário <<<\n");
-    int quantidade, posicao;
-    char usuarioBuscar[100];
-    int k=0;
-
-    quantidade = quantidadeUsuarios();
-    
-    getchar();
-    printf("Digite o e-mail do usuário que deseja encontrar as informações: ");
-    fgets(usuarioBuscar, 100, stdin);
-
-    while(strchr(usuarioBuscar,'@') == NULL){
-        printf("Digitação inválida! Digite um e-mail válido: ");
-        fgets(usuarioBuscar, 100, stdin);
-        usuarioBuscar[strcspn(usuarioBuscar, "\n")] = '\0';
-    }
-
-    usuarioBuscar[strcspn(usuarioBuscar, "\n")] = '\0';
-
-    while(k<quantidade){
-        if(strcmp(usuarioBuscar, email[k]) == 0){
-            posicao = k;
-            quantidade = k;
-        } else{
-            posicao = -1;
-        }
-        k++;
-    }
-
-    if (posicao>=0){
-        printf("Usuário encontrado! \n");
-        printf("Id: %d\n",id[posicao]);
-        printf("Nome: %s\n",nome[posicao]);
-        printf("E-mail: %s\n",email[posicao]);
-        printf("Gênero: %s\n",genero[posicao]);
-        printf("Endereço: %s\n",endereco[posicao]);
-        printf("Altura: %.2f\n",altura[posicao]);
-        printf("Vacinou: %d\n",vacinado[posicao]);
-        printf("\n");
-    } else{
-        printf("Usuário não encontrado! \n");
-    }    
-}
-
-void imprimirUsuarios(){
-    printf(">>> Imprimindo Todos os Usuários <<<\n");
-    for(int i=0; i<quantidadeUsuarios();i++){
-        printf("Id: %d\n",id[i]);
-        printf("Nome: %s\n",nome[i]);
-        printf("E-mail: %s\n",email[i]);
-        printf("Gênero: %s\n",genero[i]);
-        printf("Endereço: %s\n",endereco[i]);
-        printf("Altura: %.2f\n",altura[i]);
-        printf("Vacinou: %d\n",vacinado[i]);
-        printf("\n");
-    }
-}
-
-void fazerBackup(){
-    printf(">>> Criando Backup <<<\n");
-    int quantidade = quantidadeUsuarios();
-    
-    for (int i = 0; i < quantidade; i++) {
-        idBackup[i] = id[i];
-        strcpy(nomeBackup[i], nome[i]);
-        strcpy(emailBackup[i], email[i]);
-        strcpy(generoBackup[i], genero[i]);
-        strcpy(enderecoBackup[i], endereco[i]);
-        alturaBackup[i] = altura[i];
-        vacinadoBackup[i] = vacinado[i];
-    }
-
-    printf("Backup feito com sucesso!\n");
-}
-
-void restaurarBackup(){
-    printf(">>> Restaurando Backup <<<\n");
-    int quantidade = quantidadeUsuariosBackup();
-
-    for (int i = 0; i < quantidade; i++) {
-        id[i] = idBackup[i];
-        strcpy(nome[i], nomeBackup[i]);
-        strcpy(email[i], emailBackup[i]);
-        strcpy(genero[i], generoBackup[i]);
-        strcpy(endereco[i], enderecoBackup[i]);
-        altura[i] = alturaBackup[i];
-        vacinado[i] = vacinadoBackup[i];
-    }
-
-    printf("Restauração concluída com sucesso!\n");
-}
-
-// Funções Utilitárias
-int gerarID(){
-    int gerarID = rand();
-    return gerarID;
-}
-
-int quantidadeUsuarios(){
-    int contador = 0;
-    for(int j=0;j<1000;j++){
-        if(id[j]>=1){
-            contador++;
-        } else{
-            return contador;
-        }
-    }
-}
-
-int quantidadeUsuariosBackup(){
-    int contador = 0;
-    for(int j=0;j<1000;j++){
-        if(id[j]>=1){
-            contador++;
-        } else{
-            return contador;
-        }
-    }
-}
-
-int posicaoUsuario(int idUsuario){
-    int quantidade = quantidadeUsuarios();
-    for(int i = 0; i<quantidade; i++){
-        if(id[i] == idUsuario){
-            return i;
-        }
-    }
-    return -1;
+    return 0;
 }
